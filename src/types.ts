@@ -36,6 +36,12 @@ export interface Order {
   totalAmount: number;
   date: string;
   status: OrderStatus;
+  deliveryDate?: string;
+  deliveryAddress?: string;
+  paymentMethod?: string;
+  paymentDate?: string;
+  paymentAmount?: number;
+  paymentStatus?: PaymentStatus;
 }
 
 export interface Payment {

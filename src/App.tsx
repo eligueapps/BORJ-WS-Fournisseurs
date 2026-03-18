@@ -45,7 +45,7 @@ export default function App() {
       case 'dashboard':
         return <Dashboard orders={mockOrders} payments={mockPayments} products={mockProducts} notifications={mockNotifications} />;
       case 'orders':
-        return <Orders orders={mockOrders} />;
+        return <Orders orders={mockOrders} supplier={supplier} />;
       case 'payments':
         return <Payments payments={mockPayments} />;
       case 'catalog':

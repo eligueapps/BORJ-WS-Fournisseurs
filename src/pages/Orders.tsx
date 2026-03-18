@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, 
   Filter, 
@@ -17,17 +17,22 @@ import {
   User as UserIcon,
   CreditCard as CreditCardIcon
 } from 'lucide-react';
-import { Order, OrderStatus } from '../types';
-import { AnimatePresence } from 'motion/react';
+import { Order, OrderStatus, SupplierProfile } from '../types';
+import { generateOrderPDF } from '../services/pdfService';
 
 interface OrdersProps {
   orders: Order[];
+  supplier: SupplierProfile;
 }
 
-const Orders: React.FC<OrdersProps> = ({ orders }) => {
+const Orders: React.FC<OrdersProps> = ({ orders, supplier }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const handleDownloadPDF = (order: Order) => {
+    generateOrderPDF(order, supplier);
+  };
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.reference.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -138,7 +143,7 @@ const Orders: React.FC<OrdersProps> = ({ orders }) => {
                       <button 
                         className="p-2 rounded-lg bg-white/5 text-offwhite-muted hover:text-blue-400 hover:bg-blue-500/10 transition-all"
                         title="Télécharger le bon de commande PDF"
-                        onClick={() => alert(`Téléchargement du bon de commande ${order.reference} en cours...`)}
+                        onClick={() => handleDownloadPDF(order)}
                       >
                         <FileText size={16} />
                       </button>
@@ -288,8 +293,8 @@ const Orders: React.FC<OrdersProps> = ({ orders }) => {
                               <p className="text-[10px] text-offwhite-muted">SKU: {item.productId}</p>
                             </td>
                             <td className="px-4 py-4 text-sm text-offwhite text-center">{item.quantity}</td>
-                            <td className="px-4 py-4 text-sm text-offwhite-muted text-right">{(selectedOrder.totalAmount / selectedOrder.items.length / item.quantity).toFixed(2)} €</td>
-                            <td className="px-4 py-4 text-sm font-bold text-offwhite text-right">{(selectedOrder.totalAmount / selectedOrder.items.length).toLocaleString()} €</td>
+                            <td className="px-4 py-4 text-sm text-offwhite-muted text-right">{item.price.toFixed(2)} €</td>
+                            <td className="px-4 py-4 text-sm font-bold text-offwhite text-right">{(item.quantity * item.price).toLocaleString()} €</td>
                           </tr>
                         ))}
                       </tbody>
@@ -331,7 +336,7 @@ const Orders: React.FC<OrdersProps> = ({ orders }) => {
                   </button>
                   <button 
                     className="flex-1 sm:flex-none copper-button py-2.5 px-6 flex items-center justify-center gap-2 text-sm"
-                    onClick={() => alert(`Téléchargement du bon de commande ${selectedOrder.reference} en cours...`)}
+                    onClick={() => handleDownloadPDF(selectedOrder)}
                   >
                     <Download size={16} />
                     Télécharger PDF

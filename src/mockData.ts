@@ -22,6 +22,10 @@ export const mockOrders: Order[] = [
     totalAmount: 215.00,
     date: '2026-03-15',
     status: OrderStatus.NEW,
+    deliveryDate: '2026-03-25',
+    deliveryAddress: '45 Avenue des Champs-Élysées, 75008 Paris',
+    paymentMethod: 'Virement Bancaire',
+    paymentStatus: PaymentStatus.PENDING,
   },
   {
     id: 'ORD-102',
@@ -33,6 +37,12 @@ export const mockOrders: Order[] = [
     totalAmount: 360.00,
     date: '2026-03-16',
     status: OrderStatus.PREPARING,
+    deliveryDate: '2026-03-22',
+    deliveryAddress: '12 Rue de la République, 69002 Lyon',
+    paymentMethod: 'Carte Bancaire',
+    paymentStatus: PaymentStatus.PAID,
+    paymentDate: '2026-03-16',
+    paymentAmount: 360.00,
   },
   {
     id: 'ORD-103',
@@ -44,6 +54,10 @@ export const mockOrders: Order[] = [
     totalAmount: 85.00,
     date: '2026-03-17',
     status: OrderStatus.VALIDATED,
+    deliveryDate: '2026-03-28',
+    deliveryAddress: '8 Boulevard Victor Hugo, 06000 Nice',
+    paymentMethod: 'Virement Bancaire',
+    paymentStatus: PaymentStatus.PENDING,
   },
   {
     id: 'ORD-104',
@@ -55,6 +69,12 @@ export const mockOrders: Order[] = [
     totalAmount: 220.00,
     date: '2026-03-14',
     status: OrderStatus.DELIVERED,
+    deliveryDate: '2026-03-18',
+    deliveryAddress: '22 Rue des Bouchers, 67000 Strasbourg',
+    paymentMethod: 'Carte Bancaire',
+    paymentStatus: PaymentStatus.PAID,
+    paymentDate: '2026-03-14',
+    paymentAmount: 220.00,
   },
 ];
 
