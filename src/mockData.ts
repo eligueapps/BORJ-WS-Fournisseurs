@@ -126,7 +126,15 @@ export const mockProducts: Product[] = [
     category: 'Stores',
     status: ProductStatus.ACTIVE,
     image: 'https://picsum.photos/seed/blind1/400/300',
+    basePrice: 85.00,
     internalNotes: 'Modèle premium, tissu épais.',
+    promotion: {
+      id: 'PROM-001',
+      discountPercentage: 15,
+      startDate: '2026-03-01',
+      endDate: '2026-03-31',
+      isActive: true
+    }
   },
   {
     id: 'PROD-002',
@@ -135,6 +143,7 @@ export const mockProducts: Product[] = [
     category: 'Rideaux',
     status: ProductStatus.ACTIVE,
     image: 'https://picsum.photos/seed/curtain1/400/300',
+    basePrice: 45.00,
   },
   {
     id: 'PROD-003',
@@ -143,6 +152,7 @@ export const mockProducts: Product[] = [
     category: 'Stores',
     status: ProductStatus.ACTIVE,
     image: 'https://picsum.photos/seed/blind2/400/300',
+    basePrice: 120.00,
   },
   {
     id: 'PROD-004',
@@ -151,6 +161,7 @@ export const mockProducts: Product[] = [
     category: 'Rideaux',
     status: ProductStatus.OUT_OF_STOCK,
     image: 'https://picsum.photos/seed/curtain2/400/300',
+    basePrice: 110.00,
     internalNotes: 'Réapprovisionnement prévu fin mars.',
   },
 ];

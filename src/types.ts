@@ -57,6 +57,15 @@ export interface Payment {
   invoiceUrl?: string;
 }
 
+export interface Promotion {
+  id: string;
+  discountPercentage?: number;
+  promoPrice?: number;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+}
+
 export interface Product {
   id: string;
   reference: string;
@@ -64,6 +73,8 @@ export interface Product {
   category: string;
   status: ProductStatus;
   image: string;
+  basePrice: number;
+  promotion?: Promotion;
   internalNotes?: string;
 }
 

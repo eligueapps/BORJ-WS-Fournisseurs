@@ -66,8 +66,8 @@ export const generateOrderPDF = (order: Order, supplier: SupplierProfile) => {
     item.productName,
     item.productId, 
     item.quantity.toString(),
-    `${item.price.toLocaleString()} €`,
-    `${(item.quantity * item.price).toLocaleString()} €`
+    `${item.price.toLocaleString()} DH`,
+    `${(item.quantity * item.price).toLocaleString()} DH`
   ]);
 
   autoTable(doc, {
@@ -98,7 +98,7 @@ export const generateOrderPDF = (order: Order, supplier: SupplierProfile) => {
   const finalY = (doc as any).lastAutoTable.finalY + 10;
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  const totalText = `TOTAL GÉNÉRAL : ${order.totalAmount.toLocaleString()} €`;
+  const totalText = `TOTAL GÉNÉRAL : ${order.totalAmount.toLocaleString()} DH`;
   const totalWidth = doc.getTextWidth(totalText);
   doc.text(totalText, pageWidth - totalWidth - 15, finalY);
 
@@ -150,7 +150,7 @@ export const generateOrderPDF = (order: Order, supplier: SupplierProfile) => {
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  const legal = 'Wender Stores - SAS au capital de 1 000 000 € - RCS Paris 123 456 789';
+  const legal = 'Wender Stores - SAS au capital de 1 000 000 DH - RCS Paris 123 456 789';
   const legalWidth = doc.getTextWidth(legal);
   doc.text(legal, (pageWidth - legalWidth) / 2, footerY + 18);
 
@@ -222,8 +222,8 @@ export const generateReceiptPDF = (payment: Payment, supplier: SupplierProfile) 
     head: [['Désignation', 'Valeur']],
     body: [
       ['Référence de facture', payment.reference],
-      ['Montant Total', `${payment.amount.toLocaleString()} €`],
-      ['Montant Réglé', `${payment.amount.toLocaleString()} €`],
+      ['Montant Total', `${payment.amount.toLocaleString()} DH`],
+      ['Montant Réglé', `${payment.amount.toLocaleString()} DH`],
       ['Mode de Règlement', payment.paymentMethod || 'N/A'],
       ['Statut du Paiement', payment.status]
     ],
@@ -389,7 +389,7 @@ export const generateContractPDF = (supplier: SupplierProfile) => {
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(gray[0], gray[1], gray[2]);
-  const legal = 'Wender Stores - SAS au capital de 1 000 000 € - RCS Paris 123 456 789';
+  const legal = 'Wender Stores - SAS au capital de 1 000 000 DH - RCS Paris 123 456 789';
   const legalWidth = doc.getTextWidth(legal);
   doc.text(legal, (pageWidth - legalWidth) / 2, pageHeight - 10);
 

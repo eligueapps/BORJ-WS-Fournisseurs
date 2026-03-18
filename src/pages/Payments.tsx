@@ -16,7 +16,6 @@ import {
   Printer,
   Calendar,
   Hash,
-  Euro,
   Receipt
 } from 'lucide-react';
 import { Payment, PaymentStatus, SupplierProfile } from '../types';
@@ -74,7 +73,7 @@ const Payments: React.FC<PaymentsProps> = ({ payments, supplier }) => {
             <TrendingUp size={20} className="text-emerald-400" />
           </div>
           <p className="text-sm font-medium text-offwhite-muted mb-1">Total Payé</p>
-          <h3 className="text-2xl font-bold text-offwhite">{totalPaid.toLocaleString()} €</h3>
+          <h3 className="text-2xl font-bold text-offwhite">{totalPaid.toLocaleString()} DH</h3>
         </div>
         <div className="glass-card p-6 border-l-4 border-l-amber-400">
           <div className="flex items-center justify-between mb-4">
@@ -84,7 +83,7 @@ const Payments: React.FC<PaymentsProps> = ({ payments, supplier }) => {
             <Wallet size={20} className="text-amber-400" />
           </div>
           <p className="text-sm font-medium text-offwhite-muted mb-1">En attente</p>
-          <h3 className="text-2xl font-bold text-offwhite">{totalPending.toLocaleString()} €</h3>
+          <h3 className="text-2xl font-bold text-offwhite">{totalPending.toLocaleString()} DH</h3>
         </div>
         <div className="glass-card p-6 border-l-4 border-l-rose-400">
           <div className="flex items-center justify-between mb-4">
@@ -93,7 +92,7 @@ const Payments: React.FC<PaymentsProps> = ({ payments, supplier }) => {
             </div>
           </div>
           <p className="text-sm font-medium text-offwhite-muted mb-1">En retard</p>
-          <h3 className="text-2xl font-bold text-offwhite">{totalOverdue.toLocaleString()} €</h3>
+          <h3 className="text-2xl font-bold text-offwhite">{totalOverdue.toLocaleString()} DH</h3>
         </div>
       </div>
 
@@ -117,7 +116,7 @@ const Payments: React.FC<PaymentsProps> = ({ payments, supplier }) => {
                     <span className="text-sm font-bold text-offwhite group-hover:text-copper transition-colors">{payment.reference}</span>
                   </td>
                   <td className="px-6 py-4 text-sm text-offwhite-muted">{payment.date}</td>
-                  <td className="px-6 py-4 text-sm font-bold text-offwhite">{payment.amount.toLocaleString()} €</td>
+                  <td className="px-6 py-4 text-sm font-bold text-offwhite">{payment.amount.toLocaleString()} DH</td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(payment.status)}`}>
                       {payment.status}
@@ -222,8 +221,8 @@ const Payments: React.FC<PaymentsProps> = ({ payments, supplier }) => {
                     <div className="space-y-1.5">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-copper">Montant Payé</p>
                       <div className="flex items-center gap-3 text-offwhite">
-                        <Euro size={18} className="text-offwhite-muted" />
-                        <span className="text-3xl font-black">{selectedPayment.amount.toLocaleString()} €</span>
+                        <Wallet size={18} className="text-offwhite-muted" />
+                        <span className="text-3xl font-black">{selectedPayment.amount.toLocaleString()} DH</span>
                       </div>
                     </div>
                     <div className="space-y-1.5">

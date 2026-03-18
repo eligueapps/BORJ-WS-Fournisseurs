@@ -10,7 +10,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Package,
-  Bell
+  Bell,
+  Tag
 } from 'lucide-react';
 import { Order, OrderStatus, Payment, Product, Notification } from '../types';
 
@@ -29,11 +30,19 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, payments, products, notif
   const activeProducts = products.filter(p => p.status === 'Actif').length;
   const outOfStockProducts = products.filter(p => p.status === 'En rupture').length;
 
+  const activePromos = products.filter(p => {
+    if (!p.promotion || !p.promotion.isActive) return false;
+    const now = new Date();
+    const start = new Date(p.promotion.startDate);
+    const end = new Date(p.promotion.endDate);
+    return now >= start && now <= end;
+  }).length;
+
   const stats = [
     { label: 'Total Commandes', value: totalOrders, icon: ShoppingBag, color: 'text-blue-400', trend: '+12%', trendUp: true },
-    { label: 'En attente / Nouvelles', value: pendingOrders, icon: Clock, color: 'text-amber-400', trend: '-5%', trendUp: false },
-    { label: 'Paiements Reçus', value: `${totalRevenue.toLocaleString()} €`, icon: CreditCard, color: 'text-emerald-400', trend: '+8%', trendUp: true },
+    { label: 'Paiements Reçus', value: `${totalRevenue.toLocaleString()} DH`, icon: CreditCard, color: 'text-emerald-400', trend: '+8%', trendUp: true },
     { label: 'Produits Actifs', value: activeProducts, icon: CheckCircle, color: 'text-indigo-400', trend: '0%', trendUp: true },
+    { label: 'Promos Actives', value: activePromos, icon: Tag, color: 'text-copper', trend: activePromos > 0 ? `+${activePromos}` : '0', trendUp: true },
   ];
 
   return (
@@ -121,7 +130,7 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, payments, products, notif
                           {order.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm font-bold text-offwhite text-right">{order.totalAmount.toLocaleString()} €</td>
+                      <td className="px-6 py-4 text-sm font-bold text-offwhite text-right">{order.totalAmount.toLocaleString()} DH</td>
                     </tr>
                   ))}
                 </tbody>

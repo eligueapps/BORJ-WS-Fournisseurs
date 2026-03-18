@@ -130,7 +130,7 @@ const Orders: React.FC<OrdersProps> = ({ orders, supplier }) => {
                       {order.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm font-bold text-offwhite text-right">{order.totalAmount.toLocaleString()} €</td>
+                  <td className="px-6 py-4 text-sm font-bold text-offwhite text-right">{order.totalAmount.toLocaleString()} DH</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
                       <button 
@@ -293,8 +293,8 @@ const Orders: React.FC<OrdersProps> = ({ orders, supplier }) => {
                               <p className="text-[10px] text-offwhite-muted">SKU: {item.productId}</p>
                             </td>
                             <td className="px-4 py-4 text-sm text-offwhite text-center">{item.quantity}</td>
-                            <td className="px-4 py-4 text-sm text-offwhite-muted text-right">{item.price.toFixed(2)} €</td>
-                            <td className="px-4 py-4 text-sm font-bold text-offwhite text-right">{(item.quantity * item.price).toLocaleString()} €</td>
+                            <td className="px-4 py-4 text-sm text-offwhite-muted text-right">{item.price.toFixed(2)} DH</td>
+                            <td className="px-4 py-4 text-sm font-bold text-offwhite text-right">{(item.quantity * item.price).toLocaleString()} DH</td>
                           </tr>
                         ))}
                       </tbody>
@@ -307,16 +307,16 @@ const Orders: React.FC<OrdersProps> = ({ orders, supplier }) => {
                   <div className="w-full md:w-64 space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-offwhite-muted">Sous-total</span>
-                      <span className="text-offwhite">{(selectedOrder.totalAmount * 0.8).toLocaleString()} €</span>
+                      <span className="text-offwhite">{(selectedOrder.totalAmount * 0.8).toLocaleString()} DH</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-offwhite-muted">TVA (20%)</span>
-                      <span className="text-offwhite">{(selectedOrder.totalAmount * 0.2).toLocaleString()} €</span>
+                      <span className="text-offwhite">{(selectedOrder.totalAmount * 0.2).toLocaleString()} DH</span>
                     </div>
                     <div className="h-[1px] bg-white/10 my-2" />
                     <div className="flex justify-between text-lg font-bold">
                       <span className="text-copper">Total</span>
-                      <span className="text-offwhite">{selectedOrder.totalAmount.toLocaleString()} €</span>
+                      <span className="text-offwhite">{selectedOrder.totalAmount.toLocaleString()} DH</span>
                     </div>
                   </div>
                 </div>
