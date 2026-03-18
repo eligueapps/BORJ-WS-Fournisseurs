@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-midnight: #0A1128;
+  --color-midnight-light: #16213E;
+  --color-copper: #B87333;
+  --color-copper-light: #D4AF37;
+  --color-offwhite: #F5F5F0;
+  --color-offwhite-muted: #A0A090;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-midnight text-offwhite font-sans antialiased;
+  }
+}
+
+.glass-card {
+  @apply bg-midnight-light/40 backdrop-blur-md border border-white/5 rounded-xl shadow-xl;
+}
+
+.copper-gradient {
+  background: linear-gradient(135deg, #B87333 0%, #D4AF37 100%);
+}
+
+.copper-text {
+  @apply text-copper;
+}
+
+.copper-border {
+  @apply border-copper/30;
+}
+
+.copper-button {
+  @apply text-midnight font-semibold px-6 py-2 rounded-lg transition-all hover:opacity-90 active:scale-95;
+  background: linear-gradient(135deg, #B87333 0%, #D4AF37 100%);
+}
