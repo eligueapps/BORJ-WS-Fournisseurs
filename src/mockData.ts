@@ -1,4 +1,4 @@
-import { Order, OrderStatus, Payment, PaymentStatus, Product, ProductStatus, Notification, SupplierProfile } from './types';
+import { Order, OrderStatus, Payment, PaymentStatus, Product, ProductStatus, Notification, SupplierProfile, ContractStatus } from './types';
 
 export const mockSupplier: SupplierProfile = {
   id: 'SUP-001',
@@ -8,6 +8,7 @@ export const mockSupplier: SupplierProfile = {
   phone: '+33 1 23 45 67 89',
   address: '123 Rue de la Paix, 75001 Paris, France',
   rib: 'FR76 1234 5678 9012 3456 7890 123',
+  contractStatus: ContractStatus.UNSIGNED,
 };
 
 export const mockOrders: Order[] = [

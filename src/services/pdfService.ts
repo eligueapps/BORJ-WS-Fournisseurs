@@ -272,3 +272,128 @@ export const generateReceiptPDF = (payment: Payment, supplier: SupplierProfile) 
   // Save the PDF
   doc.save(`recepisse_${payment.reference}.pdf`);
 };
+
+export const generateContractPDF = (supplier: SupplierProfile) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  
+  // Colors
+  const copper: [number, number, number] = [184, 115, 51]; // #B87333
+  const midnight: [number, number, number] = [10, 10, 10]; // #0A0A0A
+  const gray: [number, number, number] = [128, 128, 128];
+
+  // 1. Header: Company Info (Wender Stores)
+  doc.setFillColor(midnight[0], midnight[1], midnight[2]);
+  doc.rect(0, 0, pageWidth, 40, 'F');
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.text('WENDER STORES', 15, 20);
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('123 Avenue de la Décoration, 75001 Paris', 15, 28);
+  doc.text('Tél: +33 1 00 00 00 00 | Email: contact@wenderstores.com', 15, 34);
+
+  // Document Title
+  doc.setTextColor(copper[0], copper[1], copper[2]);
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  const title = 'CONDITIONS GÉNÉRALES FOURNISSEUR';
+  const titleWidth = doc.getTextWidth(title);
+  doc.text(title, pageWidth - titleWidth - 15, 25);
+
+  // 2. Supplier Info
+  doc.setTextColor(midnight[0], midnight[1], midnight[2]);
+  doc.setFontSize(12);
+  doc.setDrawColor(copper[0], copper[1], copper[2]);
+  doc.setLineWidth(0.5);
+  doc.line(15, 45, pageWidth - 15, 45);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('INFORMATIONS FOURNISSEUR', 15, 55);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text(`Entreprise: ${supplier.companyName}`, 15, 62);
+  doc.text(`Contact: ${supplier.contactName}`, 15, 68);
+  doc.text(`Adresse: ${supplier.address}`, 15, 74, { maxWidth: pageWidth - 30 });
+  doc.text(`Email: ${supplier.email}`, 15, 86);
+
+  // 3. Contract Content
+  let currentY = 100;
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('1. Engagement tarifaire', 15, currentY);
+  currentY += 7;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Le fournisseur s’engage à respecter les tarifs définis dans le catalogue. Toute modification doit être soumise à validation préalable par Wender Stores.', 15, currentY, { maxWidth: pageWidth - 30 });
+  currentY += 15;
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('2. Gestion des produits et du stock', 15, currentY);
+  currentY += 7;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Le fournisseur est responsable de la mise à jour de la disponibilité. Un produit en rupture sera automatiquement désactivé.', 15, currentY, { maxWidth: pageWidth - 30 });
+  currentY += 15;
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('3. Responsabilité sur les commandes', 15, currentY);
+  currentY += 7;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Le fournisseur s’engage à honorer toutes les commandes reçues et à respecter les spécifications des produits.', 15, currentY, { maxWidth: pageWidth - 30 });
+  currentY += 15;
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('4. Délais de livraison', 15, currentY);
+  currentY += 7;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Le fournisseur doit respecter les délais convenus. Tout retard doit être justifié et signalé immédiatement.', 15, currentY, { maxWidth: pageWidth - 30 });
+  currentY += 15;
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('5. Modification du contrat', 15, currentY);
+  currentY += 7;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Une fois validé, le contrat ne peut être modifié par le fournisseur sans une procédure officielle validée par Wender Stores.', 15, currentY, { maxWidth: pageWidth - 30 });
+
+  // 4. Signature Section
+  const signatureY = pageHeight - 60;
+  doc.setDrawColor(copper[0], copper[1], copper[2]);
+  doc.line(15, signatureY, pageWidth - 15, signatureY);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('SIGNATURE ÉLECTRONIQUE', 15, signatureY + 10);
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Signé par: ${supplier.contractSignedBy || supplier.contactName}`, 15, signatureY + 18);
+  doc.text(`Date de signature: ${supplier.contractSignedDate || new Date().toLocaleDateString()}`, 15, signatureY + 24);
+  
+  doc.setFont('helvetica', 'bolditalic');
+  doc.setTextColor(copper[0], copper[1], copper[2]);
+  doc.text('MENTION : "LU ET APPROUVÉ"', 15, signatureY + 32);
+
+  // 5. Footer
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(gray[0], gray[1], gray[2]);
+  const legal = 'Wender Stores - SAS au capital de 1 000 000 € - RCS Paris 123 456 789';
+  const legalWidth = doc.getTextWidth(legal);
+  doc.text(legal, (pageWidth - legalWidth) / 2, pageHeight - 10);
+
+  // Save the PDF
+  const fileName = `contrat_fournisseur_${supplier.companyName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+  doc.save(fileName);
+};

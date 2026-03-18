@@ -7,6 +7,7 @@ import Payments from './pages/Payments';
 import Catalog from './pages/Catalog';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
+import Terms from './pages/Terms';
 import LoginPage from './pages/LoginPage';
 import { 
   mockSupplier, 
@@ -50,6 +51,8 @@ export default function App() {
         return <Payments payments={mockPayments} supplier={supplier} />;
       case 'catalog':
         return <Catalog products={mockProducts} />;
+      case 'terms':
+        return <Terms supplier={supplier} onUpdate={setSupplier} />;
       case 'notifications':
         return <Notifications notifications={mockNotifications} />;
       case 'profile':

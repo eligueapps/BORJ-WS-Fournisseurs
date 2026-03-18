@@ -76,6 +76,11 @@ export interface Notification {
   read: boolean;
 }
 
+export enum ContractStatus {
+  UNSIGNED = 'Non signé',
+  SIGNED = 'Signé'
+}
+
 export interface SupplierProfile {
   id: string;
   companyName: string;
@@ -85,4 +90,7 @@ export interface SupplierProfile {
   address: string;
   rib: string;
   logo?: string;
+  contractStatus: ContractStatus;
+  contractSignedDate?: string;
+  contractSignedBy?: string;
 }

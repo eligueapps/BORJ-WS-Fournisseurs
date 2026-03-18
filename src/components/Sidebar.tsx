@@ -8,7 +8,8 @@ import {
   User, 
   LogOut,
   Menu,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -26,6 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
     { id: 'orders', label: 'Commandes', icon: Package },
     { id: 'payments', label: 'Paiements', icon: CreditCard },
     { id: 'catalog', label: 'Catalogue Produits', icon: ShoppingBag },
+    { id: 'terms', label: 'Conditions Générales', icon: FileText },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'profile', label: 'Profil Fournisseur', icon: User },
   ];
