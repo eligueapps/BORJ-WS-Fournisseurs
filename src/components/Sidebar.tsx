@@ -9,9 +9,11 @@ import {
   LogOut,
   Menu,
   X,
-  FileText
+  FileText,
+  Users as UsersIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { UserRole } from '../types';
 
 interface SidebarProps {
   activeTab: string;
@@ -19,17 +21,21 @@ interface SidebarProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   onLogout: () => void;
+  userRole: UserRole;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setIsOpen, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setIsOpen, onLogout, userRole }) => {
   const menuItems = [
+    ...(userRole === UserRole.ADMIN ? [{ id: 'users', label: 'Utilisateurs', icon: UsersIcon }] : []),
     { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
-    { id: 'orders', label: 'Commandes', icon: Package },
-    { id: 'payments', label: 'Paiements', icon: CreditCard },
-    { id: 'catalog', label: 'Catalogue Produits', icon: ShoppingBag },
-    { id: 'terms', label: 'Conditions Générales', icon: FileText },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'profile', label: 'Profil Fournisseur', icon: User },
+    ...(userRole === UserRole.SUPPLIER ? [
+      { id: 'orders', label: 'Commandes', icon: Package },
+      { id: 'payments', label: 'Paiements', icon: CreditCard },
+      { id: 'catalog', label: 'Catalogue Produits', icon: ShoppingBag },
+      { id: 'terms', label: 'Conditions Générales', icon: FileText },
+      { id: 'notifications', label: 'Notifications', icon: Bell },
+      { id: 'profile', label: 'Profil Fournisseur', icon: User },
+    ] : []),
   ];
 
   return (

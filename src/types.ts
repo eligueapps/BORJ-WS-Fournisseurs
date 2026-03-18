@@ -92,6 +92,33 @@ export enum ContractStatus {
   SIGNED = 'Signé'
 }
 
+export enum UserRole {
+  ADMIN = 'Administrateur',
+  SUPPLIER = 'Fournisseur'
+}
+
+export enum UserAccountStatus {
+  ACTIVE = 'Actif',
+  INACTIVE = 'Inactif',
+  SUSPENDED = 'Suspendu'
+}
+
+export interface SupplierAccount {
+  id: string;
+  companyName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  login: string;
+  password?: string;
+  address: string;
+  city: string;
+  status: UserAccountStatus;
+  createdAt: string;
+  lastLogin?: string;
+  category?: string;
+}
+
 export interface SupplierProfile {
   id: string;
   companyName: string;

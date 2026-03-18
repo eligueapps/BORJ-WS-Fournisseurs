@@ -1,4 +1,4 @@
-import { Order, OrderStatus, Payment, PaymentStatus, Product, ProductStatus, Notification, SupplierProfile, ContractStatus } from './types';
+import { Order, OrderStatus, Payment, PaymentStatus, Product, ProductStatus, Notification, SupplierProfile, ContractStatus, UserAccountStatus, SupplierAccount } from './types';
 
 export const mockSupplier: SupplierProfile = {
   id: 'SUP-001',
@@ -10,6 +10,48 @@ export const mockSupplier: SupplierProfile = {
   rib: 'FR76 1234 5678 9012 3456 7890 123',
   contractStatus: ContractStatus.UNSIGNED,
 };
+
+export const mockSuppliers: SupplierAccount[] = [
+  {
+    id: 'SUP-001',
+    companyName: 'Déco & Co',
+    contactName: 'Jean Dupont',
+    email: 'jean.dupont@deco.com',
+    phone: '+33 1 23 45 67 89',
+    login: 'deco_jean',
+    address: '123 Rue de la Paix',
+    city: 'Paris',
+    status: UserAccountStatus.ACTIVE,
+    createdAt: '2026-01-10',
+    category: 'Textile'
+  },
+  {
+    id: 'SUP-002',
+    companyName: 'Lumière Design',
+    contactName: 'Marie Curie',
+    email: 'marie@lumiere.fr',
+    phone: '+33 6 12 34 56 78',
+    login: 'lumiere_marie',
+    address: '45 Avenue des Lumières',
+    city: 'Lyon',
+    status: UserAccountStatus.ACTIVE,
+    createdAt: '2026-02-15',
+    category: 'Luminaire'
+  },
+  {
+    id: 'SUP-003',
+    companyName: 'Mobilier Pro',
+    contactName: 'Paul Martin',
+    email: 'p.martin@mobpro.com',
+    phone: '+33 4 56 78 90 12',
+    login: 'mobpro_paul',
+    address: '8 Boulevard du Meuble',
+    city: 'Marseille',
+    status: UserAccountStatus.INACTIVE,
+    createdAt: '2026-03-01',
+    category: 'Mobilier'
+  }
+];
 
 export const mockOrders: Order[] = [
   {

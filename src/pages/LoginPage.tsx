@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
+import { UserRole } from '../types';
 
 interface LoginPageProps {
-  onLogin: (email: string, pass: string) => void;
+  onLogin: (email: string, pass: string, role: UserRole) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
@@ -17,7 +18,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     setIsSubmitting(true);
     // Simulate API call
     setTimeout(() => {
-      onLogin(email, password);
+      // Check for admin credentials (mocked for demo)
+      // In a real app, this would be handled by the backend
+      const isAdmin = email === 'admin@wenderstores.com' && password === 'admin_password_secure';
+      onLogin(email, password, isAdmin ? UserRole.ADMIN : UserRole.SUPPLIER);
       setIsSubmitting(false);
     }, 1500);
   };

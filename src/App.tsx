@@ -9,13 +9,16 @@ import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import Terms from './pages/Terms';
 import LoginPage from './pages/LoginPage';
+import Users from './pages/Users';
 import { 
   mockSupplier, 
   mockOrders, 
   mockPayments, 
   mockProducts, 
-  mockNotifications 
+  mockNotifications,
+  mockSuppliers 
 } from './mockData';
+import { UserRole } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
@@ -23,7 +26,9 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<UserRole>(UserRole.SUPPLIER);
   const [supplier, setSupplier] = useState(mockSupplier);
+  const [allSuppliers, setAllSuppliers] = useState(mockSuppliers);
 
   useEffect(() => {
     // Simulate initial loading for premium feel
@@ -31,14 +36,19 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleLogin = (email: string, pass: string) => {
-    console.log('Logging in with:', email);
+  const handleLogin = (email: string, pass: string, role: UserRole = UserRole.SUPPLIER) => {
+    console.log('Logging in with:', email, 'as', role);
+    setUserRole(role);
     setIsAuthenticated(true);
+    if (role === UserRole.ADMIN) {
+      setActiveTab('users');
+    }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     setActiveTab('dashboard');
+    setUserRole(UserRole.SUPPLIER);
   };
 
   const renderContent = () => {
@@ -51,6 +61,8 @@ export default function App() {
         return <Payments payments={mockPayments} supplier={supplier} />;
       case 'catalog':
         return <Catalog products={mockProducts} />;
+      case 'users':
+        return <Users suppliers={allSuppliers} onUpdate={setAllSuppliers} />;
       case 'terms':
         return <Terms supplier={supplier} onUpdate={setSupplier} />;
       case 'notifications':
@@ -108,6 +120,7 @@ export default function App() {
         isOpen={isSidebarOpen} 
         setIsOpen={setIsSidebarOpen} 
         onLogout={handleLogout}
+        userRole={userRole}
       />
 
       <div className="flex-1 flex flex-col lg:pl-72 min-w-0">
