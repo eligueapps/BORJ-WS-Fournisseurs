@@ -48,9 +48,12 @@ export interface Payment {
   id: string;
   reference: string;
   orderReference: string;
+  clientName: string;
   date: string;
   amount: number;
   status: PaymentStatus;
+  paymentMethod?: string;
+  notes?: string;
   invoiceUrl?: string;
 }
 

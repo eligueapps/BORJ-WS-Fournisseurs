@@ -47,7 +47,7 @@ export default function App() {
       case 'orders':
         return <Orders orders={mockOrders} supplier={supplier} />;
       case 'payments':
-        return <Payments payments={mockPayments} />;
+        return <Payments payments={mockPayments} supplier={supplier} />;
       case 'catalog':
         return <Catalog products={mockProducts} />;
       case 'notifications':

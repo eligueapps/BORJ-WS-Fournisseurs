@@ -19,14 +19,20 @@ import {
   Euro,
   Receipt
 } from 'lucide-react';
-import { Payment, PaymentStatus } from '../types';
+import { Payment, PaymentStatus, SupplierProfile } from '../types';
+import { generateReceiptPDF } from '../services/pdfService';
 
 interface PaymentsProps {
   payments: Payment[];
+  supplier: SupplierProfile;
 }
 
-const Payments: React.FC<PaymentsProps> = ({ payments }) => {
+const Payments: React.FC<PaymentsProps> = ({ payments, supplier }) => {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+
+  const handleDownloadReceipt = (payment: Payment) => {
+    generateReceiptPDF(payment, supplier);
+  };
   const totalPaid = payments.filter(p => p.status === PaymentStatus.PAID).reduce((acc, p) => acc + p.amount, 0);
   const totalPending = payments.filter(p => p.status === PaymentStatus.PENDING).reduce((acc, p) => acc + p.amount, 0);
   const totalOverdue = payments.filter(p => p.status === PaymentStatus.OVERDUE).reduce((acc, p) => acc + p.amount, 0);
@@ -129,7 +135,7 @@ const Payments: React.FC<PaymentsProps> = ({ payments }) => {
                       <button 
                         className="p-2 rounded-lg bg-white/5 text-offwhite-muted hover:text-blue-400 hover:bg-blue-500/10 transition-all"
                         title="Télécharger le récépissé PDF"
-                        onClick={() => alert(`Téléchargement du récépissé pour ${payment.reference} en cours...`)}
+                        onClick={() => handleDownloadReceipt(payment)}
                       >
                         <Receipt size={16} />
                       </button>
@@ -256,7 +262,7 @@ const Payments: React.FC<PaymentsProps> = ({ payments }) => {
                 </button>
                 <button 
                   className="copper-button py-2.5 px-6 flex items-center gap-2 text-sm"
-                  onClick={() => alert(`Téléchargement du récépissé pour ${selectedPayment.reference} en cours...`)}
+                  onClick={() => handleDownloadReceipt(selectedPayment)}
                 >
                   <Download size={18} />
                   Télécharger Récépissé PDF
