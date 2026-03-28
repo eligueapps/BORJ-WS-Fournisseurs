@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useCallback, useRef } from 'react';
+import { 
+  Order, 
+  OrderStatus, 
+  SupplierProfile, 
+  UserRole,
+  ConsultationStatus 
+} from '../types';
 import { 
   Search, 
   Filter, 
@@ -15,30 +21,85 @@ import {
   Printer,
   Calendar,
   User as UserIcon,
-  CreditCard as CreditCardIcon
+  CreditCard as CreditCardIcon,
+  AlertCircle
 } from 'lucide-react';
-import { Order, OrderStatus, SupplierProfile } from '../types';
+import { motion, AnimatePresence } from 'motion/react';
 import { generateOrderPDF } from '../services/pdfService';
 
 interface OrdersProps {
   orders: Order[];
+  onUpdateOrders: (orders: Order[]) => void;
   supplier: SupplierProfile;
+  userRole?: UserRole;
 }
 
-const Orders: React.FC<OrdersProps> = ({ orders, supplier }) => {
+const Orders: React.FC<OrdersProps> = ({ orders, onUpdateOrders, supplier, userRole }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
+  const [consultationFilter, setConsultationFilter] = useState<ConsultationStatus | 'All'>('All');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [orderToConfirm, setOrderToConfirm] = useState<Order | null>(null);
+  const [pendingAction, setPendingAction] = useState<'view' | 'download' | null>(null);
 
-  const handleDownloadPDF = (order: Order) => {
-    generateOrderPDF(order, supplier);
+  const isAdmin = userRole === UserRole.ADMIN;
+
+  const handleDownloadPDF = async (order: Order) => {
+    await generateOrderPDF(order, supplier);
+  };
+
+  const handleActionClick = (order: Order, action: 'view' | 'download') => {
+    if (isAdmin || order.isConfirmedBySupplier) {
+      if (action === 'view') setSelectedOrder(order);
+      else handleDownloadPDF(order);
+    } else {
+      setOrderToConfirm(order);
+      setPendingAction(action);
+      setIsConfirmModalOpen(true);
+    }
+  };
+
+  const handleConfirmReceipt = () => {
+    if (!orderToConfirm) return;
+
+    const now = new Date();
+    const date = now.toISOString().split('T')[0];
+    const time = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+    const updatedOrders = orders.map(o => 
+      o.id === orderToConfirm.id 
+        ? { 
+            ...o, 
+            isConfirmedBySupplier: true, 
+            confirmationDate: date, 
+            confirmationTime: time,
+            consultationStatus: ConsultationStatus.CONFIRMEE 
+          } 
+        : o
+    );
+
+    onUpdateOrders(updatedOrders);
+    setIsConfirmModalOpen(false);
+
+    // Execute pending action
+    const confirmedOrder = updatedOrders.find(o => o.id === orderToConfirm.id);
+    if (confirmedOrder) {
+      if (pendingAction === 'view') setSelectedOrder(confirmedOrder);
+      else if (pendingAction === 'download') handleDownloadPDF(confirmedOrder);
+    }
+
+    setOrderToConfirm(null);
+    setPendingAction(null);
   };
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.reference.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          order.clientName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'All' || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesConsultation = consultationFilter === 'All' || 
+                                (order.consultationStatus || ConsultationStatus.NON_CONSULTEE) === consultationFilter;
+    return matchesSearch && matchesStatus && matchesConsultation;
   });
 
   const getStatusColor = (status: OrderStatus) => {
@@ -49,6 +110,16 @@ const Orders: React.FC<OrdersProps> = ({ orders, supplier }) => {
       case OrderStatus.READY: return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20';
       case OrderStatus.DELIVERED: return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
       case OrderStatus.COMPLETED: return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+      default: return 'bg-white/5 text-offwhite-muted border-white/10';
+    }
+  };
+
+  const getConsultationStatusColor = (status?: ConsultationStatus) => {
+    const s = status || ConsultationStatus.NON_CONSULTEE;
+    switch (s) {
+      case ConsultationStatus.NON_CONSULTEE: return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+      case ConsultationStatus.CONSULTEE: return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      case ConsultationStatus.CONFIRMEE: return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
       default: return 'bg-white/5 text-offwhite-muted border-white/10';
     }
   };
@@ -78,18 +149,36 @@ const Orders: React.FC<OrdersProps> = ({ orders, supplier }) => {
             className="w-full bg-midnight border border-white/5 rounded-xl py-2.5 pl-10 pr-4 text-sm text-offwhite placeholder:text-offwhite-muted focus:outline-none focus:ring-2 focus:ring-copper/50 transition-all"
           />
         </div>
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <Filter className="text-offwhite-muted" size={18} />
-          <select 
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="flex-1 md:w-48 bg-midnight border border-white/5 rounded-xl py-2.5 px-4 text-sm text-offwhite focus:outline-none focus:ring-2 focus:ring-copper/50 transition-all"
-          >
-            <option value="All">Tous les statuts</option>
-            {Object.values(OrderStatus).map(status => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
+        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+          <div className="flex items-center gap-2">
+            <Filter className="text-offwhite-muted" size={18} />
+            <select 
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="w-full md:w-40 bg-midnight border border-white/5 rounded-xl py-2.5 px-4 text-sm text-offwhite focus:outline-none focus:ring-2 focus:ring-copper/50 transition-all"
+            >
+              <option value="All">Tous les statuts</option>
+              {Object.values(OrderStatus).map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </div>
+
+          {isAdmin && (
+            <div className="flex items-center gap-2">
+              <AlertCircle className="text-offwhite-muted" size={18} />
+              <select 
+                value={consultationFilter}
+                onChange={(e) => setConsultationFilter(e.target.value as any)}
+                className="w-full md:w-48 bg-midnight border border-white/5 rounded-xl py-2.5 px-4 text-sm text-offwhite focus:outline-none focus:ring-2 focus:ring-copper/50 transition-all"
+              >
+                <option value="All">Toutes consultations</option>
+                {Object.values(ConsultationStatus).map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
@@ -104,6 +193,7 @@ const Orders: React.FC<OrdersProps> = ({ orders, supplier }) => {
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-offwhite-muted">Produits</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-offwhite-muted">Date</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-offwhite-muted">Statut</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-offwhite-muted text-center">Réception</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-offwhite-muted text-right">Total</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-offwhite-muted text-center">Actions</th>
               </tr>
@@ -130,11 +220,19 @@ const Orders: React.FC<OrdersProps> = ({ orders, supplier }) => {
                       {order.status}
                     </span>
                   </td>
+                  <td className="px-6 py-4 text-center">
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getConsultationStatusColor(order.consultationStatus)}`}>
+                      {order.consultationStatus || ConsultationStatus.NON_CONSULTEE}
+                    </span>
+                    {order.isConfirmedBySupplier && (
+                      <span className="block text-[8px] text-offwhite-muted mt-1">{order.confirmationDate} à {order.confirmationTime}</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 text-sm font-bold text-offwhite text-right">{order.totalAmount.toLocaleString()} DH</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
                       <button 
-                        onClick={() => setSelectedOrder(order)}
+                        onClick={() => handleActionClick(order, 'view')}
                         className="p-2 rounded-lg bg-white/5 text-offwhite-muted hover:text-copper hover:bg-copper/10 transition-all"
                         title="Voir les détails"
                       >
@@ -143,12 +241,9 @@ const Orders: React.FC<OrdersProps> = ({ orders, supplier }) => {
                       <button 
                         className="p-2 rounded-lg bg-white/5 text-offwhite-muted hover:text-blue-400 hover:bg-blue-500/10 transition-all"
                         title="Télécharger le bon de commande PDF"
-                        onClick={() => handleDownloadPDF(order)}
+                        onClick={() => handleActionClick(order, 'download')}
                       >
                         <FileText size={16} />
-                      </button>
-                      <button className="p-2 rounded-lg bg-white/5 text-offwhite-muted hover:text-emerald-400 hover:bg-emerald-500/10 transition-all">
-                        <CheckCircle size={16} />
                       </button>
                     </div>
                   </td>
@@ -342,6 +437,67 @@ const Orders: React.FC<OrdersProps> = ({ orders, supplier }) => {
                     Télécharger PDF
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Confirmation Modal */}
+      <AnimatePresence>
+        {isConfirmModalOpen && orderToConfirm && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsConfirmModalOpen(false)}
+              className="absolute inset-0 bg-black/90 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-md bg-midnight border border-white/10 rounded-2xl shadow-2xl p-8 text-center overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 copper-gradient" />
+              <div className="w-16 h-16 bg-copper/20 rounded-2xl flex items-center justify-center text-copper mx-auto mb-6">
+                <Package size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-offwhite mb-2">📦 Confirmation de réception de commande</h3>
+              <p className="text-offwhite-muted text-sm mb-8">
+                Veuillez confirmer la consultation de cette commande pour accéder aux détails et au téléchargement :
+              </p>
+
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8 text-left space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] uppercase tracking-widest text-offwhite-muted font-bold">Numéro de commande</span>
+                  <span className="text-sm font-bold text-copper">{orderToConfirm.reference}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] uppercase tracking-widest text-offwhite-muted font-bold">Date</span>
+                  <span className="text-sm font-medium text-offwhite">{orderToConfirm.date}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] uppercase tracking-widest text-offwhite-muted font-bold">Heure</span>
+                  <span className="text-sm font-medium text-offwhite">{new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={handleConfirmReceipt}
+                  className="w-full copper-button py-3.5 flex items-center justify-center gap-2 font-bold"
+                >
+                  <CheckCircle size={18} />
+                  Confirmer la réception
+                </button>
+                <button 
+                  onClick={() => setIsConfirmModalOpen(false)}
+                  className="w-full py-3.5 text-offwhite-muted hover:text-offwhite font-medium transition-colors"
+                >
+                  Annuler
+                </button>
               </div>
             </motion.div>
           </div>

@@ -8,6 +8,12 @@ export enum OrderStatus {
   COMPLETED = 'Terminée'
 }
 
+export enum ConsultationStatus {
+  NON_CONSULTEE = 'Non consultée',
+  CONSULTEE = 'Consultée',
+  CONFIRMEE = 'Confirmée'
+}
+
 export enum PaymentStatus {
   PAID = 'Payé',
   PENDING = 'En attente',
@@ -42,6 +48,10 @@ export interface Order {
   paymentDate?: string;
   paymentAmount?: number;
   paymentStatus?: PaymentStatus;
+  consultationStatus?: ConsultationStatus;
+  isConfirmedBySupplier?: boolean;
+  confirmationDate?: string;
+  confirmationTime?: string;
 }
 
 export interface Payment {

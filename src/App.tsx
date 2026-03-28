@@ -29,6 +29,7 @@ export default function App() {
   const [userRole, setUserRole] = useState<UserRole>(UserRole.SUPPLIER);
   const [supplier, setSupplier] = useState(mockSupplier);
   const [allSuppliers, setAllSuppliers] = useState(mockSuppliers);
+  const [orders, setOrders] = useState(mockOrders);
 
   useEffect(() => {
     // Simulate initial loading for premium feel
@@ -54,9 +55,9 @@ export default function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard orders={mockOrders} payments={mockPayments} products={mockProducts} notifications={mockNotifications} />;
+        return <Dashboard orders={orders} payments={mockPayments} products={mockProducts} notifications={mockNotifications} />;
       case 'orders':
-        return <Orders orders={mockOrders} supplier={supplier} />;
+        return <Orders orders={orders} onUpdateOrders={setOrders} supplier={supplier} userRole={userRole} />;
       case 'payments':
         return <Payments payments={mockPayments} supplier={supplier} />;
       case 'catalog':

@@ -1,4 +1,4 @@
-import { Order, OrderStatus, Payment, PaymentStatus, Product, ProductStatus, Notification, SupplierProfile, ContractStatus, UserAccountStatus, SupplierAccount } from './types';
+import { Order, OrderStatus, Payment, PaymentStatus, Product, ProductStatus, Notification, SupplierProfile, ContractStatus, UserAccountStatus, SupplierAccount, ConsultationStatus } from './types';
 
 export const mockSupplier: SupplierProfile = {
   id: 'SUP-001',
@@ -69,6 +69,7 @@ export const mockOrders: Order[] = [
     deliveryAddress: '45 Avenue des Champs-Élysées, 75008 Paris',
     paymentMethod: 'Virement Bancaire',
     paymentStatus: PaymentStatus.PENDING,
+    consultationStatus: ConsultationStatus.NON_CONSULTEE
   },
   {
     id: 'ORD-102',
@@ -86,6 +87,10 @@ export const mockOrders: Order[] = [
     paymentStatus: PaymentStatus.PAID,
     paymentDate: '2026-03-16',
     paymentAmount: 360.00,
+    isConfirmedBySupplier: true,
+    confirmationDate: '2026-03-16',
+    confirmationTime: '10:45',
+    consultationStatus: ConsultationStatus.CONFIRMEE
   },
   {
     id: 'ORD-103',
@@ -101,6 +106,7 @@ export const mockOrders: Order[] = [
     deliveryAddress: '8 Boulevard Victor Hugo, 06000 Nice',
     paymentMethod: 'Virement Bancaire',
     paymentStatus: PaymentStatus.PENDING,
+    consultationStatus: ConsultationStatus.NON_CONSULTEE
   },
   {
     id: 'ORD-104',
@@ -118,6 +124,7 @@ export const mockOrders: Order[] = [
     paymentStatus: PaymentStatus.PAID,
     paymentDate: '2026-03-14',
     paymentAmount: 220.00,
+    consultationStatus: ConsultationStatus.CONSULTEE
   },
 ];
 

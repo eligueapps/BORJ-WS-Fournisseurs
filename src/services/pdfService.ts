@@ -1,70 +1,87 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as QRCode from 'qrcode';
 import { Order, Payment, SupplierProfile } from '../types';
 
-export const generateOrderPDF = (order: Order, supplier: SupplierProfile) => {
+export const generateOrderPDF = async (order: Order, supplier: SupplierProfile) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   
   // Colors
   const copper: [number, number, number] = [184, 115, 51]; // #B87333
   const midnight: [number, number, number] = [10, 10, 10]; // #0A0A0A
   const gray: [number, number, number] = [128, 128, 128];
 
-  // 1. Header: Company Info (Wender Stores)
-  doc.setFillColor(midnight[0], midnight[1], midnight[2]);
-  doc.rect(0, 0, pageWidth, 40, 'F');
+  // 1. Header Section
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.1);
   
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
+  // Company Box (Left)
+  doc.rect(10, 10, 90, 20);
+  doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('WENDER STORES', 15, 20);
-  
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text('123 Avenue de la Décoration, 75001 Paris', 15, 28);
-  doc.text('Tél: +33 1 00 00 00 00 | Email: contact@wenderstores.com', 15, 34);
-
-  // Document Title
-  doc.setTextColor(copper[0], copper[1], copper[2]);
-  doc.setFontSize(28);
-  doc.setFont('helvetica', 'bold');
-  const title = 'BON DE COMMANDE';
-  const titleWidth = doc.getTextWidth(title);
-  doc.text(title, pageWidth - titleWidth - 15, 25);
-
-  // 2. Order & Supplier Info
   doc.setTextColor(midnight[0], midnight[1], midnight[2]);
-  doc.setFontSize(12);
-  doc.setDrawColor(copper[0], copper[1], copper[2]);
-  doc.setLineWidth(0.5);
-  doc.line(15, 45, pageWidth - 15, 45);
+  doc.text('WENDER STORES', 15, 22);
 
-  // Order Details (Left)
-  doc.setFont('helvetica', 'bold');
-  doc.text('DÉTAILS COMMANDE', 15, 55);
+  // Info Box (Right)
+  doc.rect(110, 10, 90, 20);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text(`N° Commande: ${order.reference}`, 15, 62);
-  doc.text(`Date: ${order.date}`, 15, 68);
-  doc.text(`Statut: ${order.status}`, 15, 74);
+  doc.text(`Edité le : ${new Date().toLocaleDateString('fr-FR')}`, 115, 18);
+  doc.text('Page : 1 / 1', 115, 25);
 
-  // Supplier Details (Right)
-  const rightColX = pageWidth / 2 + 10;
-  doc.setFontSize(12);
+  // 2. Title Section
+  // Title Box
+  doc.rect(10, 35, 120, 15);
+  doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('FOURNISSEUR', rightColX, 55);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text(supplier.companyName, rightColX, 62);
-  doc.text(supplier.address, rightColX, 68, { maxWidth: pageWidth / 2 - 25 });
-  doc.text(`Tél: ${supplier.phone}`, rightColX, 80);
-  doc.text(`Email: ${supplier.email}`, rightColX, 86);
+  doc.text('Bon de commande', 15, 45);
 
-  // 3. Products Table
+  // Ref/Date Box
+  doc.rect(135, 35, 65, 15);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`N° : ${order.reference}`, 140, 41);
+  doc.text(`Date : ${order.date}`, 140, 47);
+
+  // 3. Details Section
+  // Order Details Box (Left)
+  doc.rect(10, 55, 90, 35);
+  doc.setFillColor(240, 240, 240);
+  doc.rect(10, 55, 90, 8, 'F');
+  doc.rect(10, 55, 90, 8);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DÉTAILS COMMANDE', 15, 60);
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(`N° Commande : ${order.reference}`, 15, 70);
+  doc.text(`Date : ${order.date}`, 15, 77);
+  doc.text(`Statut : ${order.status}`, 15, 84);
+
+  // Supplier Box (Right)
+  doc.rect(110, 55, 90, 35);
+  doc.setFillColor(240, 240, 240);
+  doc.rect(110, 55, 90, 8, 'F');
+  doc.rect(110, 55, 90, 8);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('FOURNISSEUR', 115, 60);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(supplier.companyName, 115, 70);
+  doc.text(supplier.address, 115, 77, { maxWidth: 80 });
+  doc.text(`Tél : ${supplier.phone}`, 115, 84);
+
+  // 4. Products Table
   const tableData = order.items.map(item => [
+    item.productId,
     item.productName,
-    item.productId, 
+    '', // Largeur (not in data)
+    '', // Hauteur (not in data)
     item.quantity.toString(),
     `${item.price.toLocaleString()} DH`,
     `${(item.quantity * item.price).toLocaleString()} DH`
@@ -72,87 +89,75 @@ export const generateOrderPDF = (order: Order, supplier: SupplierProfile) => {
 
   autoTable(doc, {
     startY: 95,
-    head: [['Produit', 'Référence', 'Quantité', 'Prix Unitaire', 'Total']],
+    head: [['Référence', 'Désignation', 'Largeur', 'Hauteur', 'Quantité', 'Prix unitaire', 'Montant']],
     body: tableData,
-    theme: 'striped',
+    theme: 'grid',
     headStyles: {
-      fillColor: midnight,
-      textColor: [255, 255, 255],
+      fillColor: [240, 240, 240],
+      textColor: [0, 0, 0],
       fontStyle: 'bold',
       halign: 'center'
     },
     columnStyles: {
-      0: { cellWidth: 'auto' },
-      1: { halign: 'center' },
+      0: { halign: 'center' },
+      1: { cellWidth: 'auto' },
       2: { halign: 'center' },
-      3: { halign: 'right' },
-      4: { halign: 'right' }
+      3: { halign: 'center' },
+      4: { halign: 'center' },
+      5: { halign: 'right' },
+      6: { halign: 'right' }
     },
     styles: {
-      fontSize: 9,
-      cellPadding: 4
+      fontSize: 8,
+      cellPadding: 3
     }
   });
 
   // Total General
-  const finalY = (doc as any).lastAutoTable.finalY + 10;
-  doc.setFontSize(12);
+  const finalY = (doc as any).lastAutoTable.finalY + 5;
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   const totalText = `TOTAL GÉNÉRAL : ${order.totalAmount.toLocaleString()} DH`;
   const totalWidth = doc.getTextWidth(totalText);
-  doc.text(totalText, pageWidth - totalWidth - 15, finalY);
+  doc.text(totalText, pageWidth - totalWidth - 10, finalY + 5);
 
-  // 4. Payment & Delivery Info
+  // 5. Additional Info
   let nextY = finalY + 20;
-  
-  // Section Title
-  doc.setDrawColor(230, 230, 230);
-  doc.line(15, nextY - 5, pageWidth - 15, nextY - 5);
-  
-  doc.setFontSize(11);
+  doc.rect(10, nextY, pageWidth - 20, 30);
+  doc.setFillColor(240, 240, 240);
+  doc.rect(10, nextY, pageWidth - 20, 8, 'F');
+  doc.rect(10, nextY, pageWidth - 20, 8);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('INFORMATIONS COMPLÉMENTAIRES', 15, nextY);
-  
+  doc.text('INFORMATIONS COMPLÉMENTAIRES', 15, nextY + 5);
+
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  nextY += 8;
-  
-  // Payment info
-  doc.setFont('helvetica', 'bold');
-  doc.text('Paiement:', 15, nextY);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Statut: ${order.paymentStatus || 'Non payé'}`, 35, nextY);
-  doc.text(`Mode: ${order.paymentMethod || 'N/A'}`, 75, nextY);
-  if (order.paymentDate) {
-    doc.text(`Date: ${order.paymentDate}`, 120, nextY);
-  }
-  
-  nextY += 6;
-  
-  // Delivery info
-  doc.setFont('helvetica', 'bold');
-  doc.text('Livraison:', 15, nextY);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Date prévue: ${order.deliveryDate || 'À confirmer'}`, 35, nextY);
-  doc.text(`Adresse: ${order.deliveryAddress || 'N/A'}`, 75, nextY, { maxWidth: pageWidth - 90 });
+  nextY += 15;
+  doc.text(`Paiement : Statut : ${order.paymentStatus || 'En attente'} | Mode : ${order.paymentMethod || 'Virement Bancaire'}`, 15, nextY);
+  nextY += 7;
+  doc.text(`Livraison : Date prévue : ${order.deliveryDate || 'À confirmer'} | Adresse : ${order.deliveryAddress || 'N/A'}`, 15, nextY, { maxWidth: pageWidth - 30 });
 
-  // 6. Footer
-  const footerY = doc.internal.pageSize.getHeight() - 30;
-  doc.setDrawColor(copper[0], copper[1], copper[2]);
-  doc.line(15, footerY, pageWidth - 15, footerY);
-  
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(gray[0], gray[1], gray[2]);
-  const footerNote = 'Merci pour votre confiance et votre collaboration.';
-  const footerNoteWidth = doc.getTextWidth(footerNote);
-  doc.text(footerNote, (pageWidth - footerNoteWidth) / 2, footerY + 10);
-  
+  // 6. QR Code
+  try {
+    const qrDataUrl = await QRCode.toDataURL(order.reference);
+    const qrSize = 30;
+    doc.addImage(qrDataUrl, 'PNG', pageWidth - qrSize - 10, pageHeight - qrSize - 20, qrSize, qrSize);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'italic');
+    doc.text('QR Code (Numéro de bon de commande)', pageWidth - qrSize - 10, pageHeight - 15);
+  } catch (err) {
+    console.error('Error generating QR code:', err);
+  }
+
+  // 7. Footer
+  const footerY = pageHeight - 10;
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(gray[0], gray[1], gray[2]);
   const legal = 'Wender Stores - SAS au capital de 1 000 000 DH - RCS Paris 123 456 789';
   const legalWidth = doc.getTextWidth(legal);
-  doc.text(legal, (pageWidth - legalWidth) / 2, footerY + 18);
+  doc.text(legal, (pageWidth - legalWidth) / 2, footerY);
 
   // Save the PDF
   doc.save(`Bon_de_commande_${order.reference}.pdf`);
