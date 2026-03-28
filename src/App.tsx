@@ -8,6 +8,7 @@ import Catalog from './pages/Catalog';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import Terms from './pages/Terms';
+import Reports from './pages/Reports';
 import LoginPage from './pages/LoginPage';
 import Users from './pages/Users';
 import { 
@@ -70,6 +71,8 @@ export default function App() {
         return <Notifications notifications={mockNotifications} />;
       case 'profile':
         return <Profile supplier={supplier} onUpdate={setSupplier} />;
+      case 'reports':
+        return <Reports orders={orders} payments={mockPayments} supplier={supplier} />;
       default:
         return <Dashboard orders={mockOrders} payments={mockPayments} products={mockProducts} notifications={mockNotifications} />;
     }

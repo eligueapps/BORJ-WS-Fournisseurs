@@ -163,6 +163,171 @@ export const generateOrderPDF = async (order: Order, supplier: SupplierProfile) 
   doc.save(`Bon_de_commande_${order.reference}.pdf`);
 };
 
+export const generateOrdersReportPDF = (orders: Order[], supplier: SupplierProfile, startDate: string, endDate: string) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  // Colors
+  const copper: [number, number, number] = [184, 115, 51];
+  const midnight: [number, number, number] = [10, 10, 10];
+
+  // Header
+  doc.setFillColor(midnight[0], midnight[1], midnight[2]);
+  doc.rect(0, 0, pageWidth, 40, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('RAPPORT DES COMMANDES', 15, 20);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Période : du ${startDate} au ${endDate}`, 15, 30);
+  doc.text(`Fournisseur : ${supplier.companyName}`, pageWidth - 15, 30, { align: 'right' });
+
+  const tableData = orders.map(order => [
+    order.reference,
+    order.date,
+    order.clientName,
+    order.status,
+    order.consultationStatus || 'Non consultée',
+    `${order.totalAmount.toLocaleString()} DH`
+  ]);
+
+  autoTable(doc, {
+    startY: 50,
+    head: [['Référence', 'Date', 'Client', 'Statut', 'Réception', 'Total']],
+    body: tableData,
+    theme: 'grid',
+    headStyles: { fillColor: midnight, textColor: [255, 255, 255] },
+    styles: { fontSize: 8 },
+    columnStyles: { 5: { halign: 'right' } }
+  });
+
+  const finalY = (doc as any).lastAutoTable.finalY + 10;
+  const totalAmount = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`TOTAL GÉNÉRAL : ${totalAmount.toLocaleString()} DH`, pageWidth - 15, finalY, { align: 'right' });
+
+  doc.save(`Rapport_Commandes_${startDate}_${endDate}.pdf`);
+};
+
+export const generatePaymentsReportPDF = (payments: Payment[], supplier: SupplierProfile, startDate: string, endDate: string) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  const midnight: [number, number, number] = [10, 10, 10];
+
+  doc.setFillColor(midnight[0], midnight[1], midnight[2]);
+  doc.rect(0, 0, pageWidth, 40, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('RAPPORT DES PAIEMENTS', 15, 20);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Période : du ${startDate} au ${endDate}`, 15, 30);
+  doc.text(`Fournisseur : ${supplier.companyName}`, pageWidth - 15, 30, { align: 'right' });
+
+  const tableData = payments.map(payment => [
+    payment.reference,
+    payment.date,
+    payment.orderReference,
+    payment.clientName,
+    payment.paymentMethod || 'N/A',
+    payment.status,
+    `${payment.amount.toLocaleString()} DH`
+  ]);
+
+  autoTable(doc, {
+    startY: 50,
+    head: [['Réf. Paiement', 'Date', 'Réf. Commande', 'Client', 'Mode', 'Statut', 'Montant']],
+    body: tableData,
+    theme: 'grid',
+    headStyles: { fillColor: midnight, textColor: [255, 255, 255] },
+    styles: { fontSize: 8 },
+    columnStyles: { 6: { halign: 'right' } }
+  });
+
+  const finalY = (doc as any).lastAutoTable.finalY + 10;
+  const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`TOTAL GÉNÉRAL : ${totalAmount.toLocaleString()} DH`, pageWidth - 15, finalY, { align: 'right' });
+
+  doc.save(`Rapport_Paiements_${startDate}_${endDate}.pdf`);
+};
+
+export const generateDetailedReportPDF = (orders: Order[], payments: Payment[], supplier: SupplierProfile, startDate: string, endDate: string) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const midnight: [number, number, number] = [10, 10, 10];
+
+  doc.setFillColor(midnight[0], midnight[1], midnight[2]);
+  doc.rect(0, 0, pageWidth, 40, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('RAPPORT DÉTAILLÉ D\'ACTIVITÉ', 15, 20);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Période : du ${startDate} au ${endDate}`, 15, 30);
+  doc.text(`Fournisseur : ${supplier.companyName}`, pageWidth - 15, 30, { align: 'right' });
+
+  // Summary Section
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('RÉSUMÉ ANALYTIQUE', 15, 55);
+  
+  const totalOrders = orders.length;
+  const totalOrdersAmount = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+  const totalPayments = payments.length;
+  const totalPaymentsAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Nombre total de commandes : ${totalOrders}`, 15, 65);
+  doc.text(`Chiffre d'affaires total : ${totalOrdersAmount.toLocaleString()} DH`, 15, 72);
+  doc.text(`Nombre total de paiements reçus : ${totalPayments}`, 15, 79);
+  doc.text(`Montant total encaissé : ${totalPaymentsAmount.toLocaleString()} DH`, 15, 86);
+
+  // Orders Table
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('LISTE DES COMMANDES', 15, 100);
+  
+  autoTable(doc, {
+    startY: 105,
+    head: [['Référence', 'Date', 'Client', 'Statut', 'Total']],
+    body: orders.map(o => [o.reference, o.date, o.clientName, o.status, `${o.totalAmount.toLocaleString()} DH`]),
+    theme: 'grid',
+    headStyles: { fillColor: midnight, textColor: [255, 255, 255] },
+    styles: { fontSize: 8 },
+    columnStyles: { 4: { halign: 'right' } }
+  });
+
+  // Payments Table
+  let nextY = (doc as any).lastAutoTable.finalY + 15;
+  if (nextY > 250) {
+    doc.addPage();
+    nextY = 20;
+  }
+  
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('LISTE DES PAIEMENTS', 15, nextY);
+  
+  autoTable(doc, {
+    startY: nextY + 5,
+    head: [['Référence', 'Date', 'Commande', 'Mode', 'Montant']],
+    body: payments.map(p => [p.reference, p.date, p.orderReference, p.paymentMethod || 'N/A', `${p.amount.toLocaleString()} DH`]),
+    theme: 'grid',
+    headStyles: { fillColor: midnight, textColor: [255, 255, 255] },
+    styles: { fontSize: 8 },
+    columnStyles: { 4: { halign: 'right' } }
+  });
+
+  doc.save(`Rapport_Detaille_${startDate}_${endDate}.pdf`);
+};
+
 export const generateReceiptPDF = (payment: Payment, supplier: SupplierProfile) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
